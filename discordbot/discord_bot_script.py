@@ -10,7 +10,11 @@ from dotenv import load_dotenv
 
 from discord.ext import commands, tasks
 
-load_dotenv()
+script_placement = "/home/jeh/"
+
+env_path = script_placement + ".env"
+
+load_dotenv(dotenv_path=env_path)
 TOKEN = os.getenv('DISCORD_TOKEN')
 GUILD = os.getenv('DISCORD_GUILD')
 
@@ -31,10 +35,10 @@ async def on_ready():
     ##Hardcoded channel ID fordi Malte er en spasser og skal have alle mulige emojis med
     leaderboards_channel = server.get_channel(759739624448065543)
 
-    print(
-        f'{bot.user} is connected to the following guild:\n'
-        f'{server.name}(id: {server.id})'
-    )
+    current_time = datetime.datetime.now()
+    f = open(script_placement+"command_log.txt", "a+")
+    f.write("jehBOT was started and joined server: " + server.name + " with ID: " + str(server.id) + " at time: " + str(current_time) + "\n")
+    f.close()
 
 
 
@@ -60,18 +64,20 @@ async def nine_nine(ctx):
         user_nick = user.nick
     current_time = datetime.datetime.now()
 
-    print("USER " + user_name + " AKA " + user_nick + ' used COMMAND: "99" at time: ' + str(current_time))
+    f = open(script_placement+"command_log.txt", "a+")
+    f.write("USER " + user_name + " AKA " + user_nick + ' used COMMAND: "99" at time: ' + str(current_time) + "\n")
+    f.close()
 
 
 @bot.command(name='undo', help='undo a previous scoring')
 @commands.has_any_role('Skaberen', 'Tech guy', 'Admin')
 async def undo(ctx):
     global leaderboards_channel, server
-    with open('leaderboards_snapshot.json') as json_file:
+    with open(script_placement+'leaderboards_snapshot.json') as json_file:
         data = json.load(json_file)
 
     json_file.close()
-    with open('/home/jeh/leaderboards.json', "w") as outfile:
+    with open(script_placement+'leaderboards.json', "w") as outfile:
         json.dump(data, outfile, indent=4)
     outfile.close()
 
@@ -85,7 +91,9 @@ async def undo(ctx):
         user_nick = user.nick
     current_time = datetime.datetime.now()
 
-    print("USER " + user_name + " AKA " + user_nick + ' used COMMAND: "undo" at time: ' + str(current_time))
+    f = open(script_placement+"command_log.txt", "a+")
+    f.write("USER " + user_name + " AKA " + user_nick + ' used COMMAND: "undo" at time: ' + str(current_time) + "\n")
+    f.close()
 
 
 @bot.command(name='reset_leaderboards', help='resets the leaderboards')
@@ -94,10 +102,10 @@ async def reset_leaderboards(ctx):
 
     global leaderboards_channel, server
 
-    with open('leaderboards.json') as json_file:
+    with open(script_placement+'leaderboards.json') as json_file:
         data = json.load(json_file)
 
-    with open('/home/jeh/leaderboards_snapshot.json', "w") as outfile:
+    with open(script_placement+'leaderboards_snapshot.json', "w") as outfile:
         json.dump(data, outfile, indent=4)
     outfile.close()
 
@@ -107,7 +115,7 @@ async def reset_leaderboards(ctx):
         p['crewmate_wins'] = 0
         p['games'] = 0
 
-    with open('/home/jeh/leaderboards.json', "w") as outfile:
+    with open(script_placement+'leaderboards.json', "w") as outfile:
         json.dump(data, outfile, indent=4)
     outfile.close()
 
@@ -121,14 +129,16 @@ async def reset_leaderboards(ctx):
         user_nick = user.nick
     current_time = datetime.datetime.now()
 
-    print("USER " + user_name + " AKA " + user_nick + ' used COMMAND: "reset_leaderboards" at time: ' + str(current_time))
+    f = open(script_placement+"command_log.txt", "a+")
+    f.write("USER " + user_name + " AKA " + user_nick + ' used COMMAND: "reset_leaderboards" at time: ' + str(current_time) + "\n")
+    f.close()
 
 
 @bot.command(name='leaderboards', help='Displays the current top 10 on the Among Us leaderboards')
 async def leaderboards(ctx):
     global leaderboards_channel, server
 
-    with open('/home/jeh/leaderboards.json') as json_file:
+    with open(script_placement+'leaderboards.json') as json_file:
         data = json.load(json_file)
     sorted_obj = dict(data)
     sorted_obj['players'] = sorted(data['players'], key=lambda x: x['score'], reverse=True)
@@ -160,8 +170,9 @@ async def leaderboards(ctx):
         user_nick = user.nick
     current_time = datetime.datetime.now()
 
-    print("USER " + user_name + " AKA " + user_nick + ' used COMMAND: "leaderboards" at time: ' + str(current_time))
-
+    f = open(script_placement+"command_log.txt", "a+")
+    f.write("USER " + user_name + " AKA " + user_nick + ' used COMMAND: "leaderboards" at time: ' + str(current_time) + "\n")
+    f.close()
 
 @bot.command(name='admin_win', help='Award points to imposter1 "[Name]" and imposter2 "[Name]"')
 @commands.has_any_role('Skaberen', 'Tech guy', 'Admin')
@@ -190,11 +201,10 @@ async def admin_win(ctx, imposter1, imposter2):
             if i.nick == imposter1 or i.nick == imposter2:
                 point_award.append(str(i.nick))
 
-
-    with open('leaderboards.json') as json_file:
+    with open(script_placement+'leaderboards.json') as json_file:
         data = json.load(json_file)
 
-    with open('/home/jeh/leaderboards_snapshot.json', "w") as outfile:
+    with open(script_placement+'leaderboards_snapshot.json', "w") as outfile:
         json.dump(data, outfile, indent=4)
     outfile.close()
 
@@ -225,14 +235,14 @@ async def admin_win(ctx, imposter1, imposter2):
                     j['games'] = temp_games
                     played_game = True
 
-                if played_game == False:
-                    data['players'].append({
-                        'name': i.name,
-                        'score': 0,
-                        'imposter_wins': 0,
-                        "crewmate_wins": 0,
-                        "games": 1
-                    })
+            if played_game == False:
+                data['players'].append({
+                    'name': i.name,
+                    'score': 0,
+                    'imposter_wins': 0,
+                    "crewmate_wins": 0,
+                    "games": 1
+                })
         else:
             for j in data['players']:
                 if i.nick == j['name']:
@@ -240,19 +250,19 @@ async def admin_win(ctx, imposter1, imposter2):
                     j['games'] = temp_games
                     played_game = True
 
-                if played_game == False:
-                    data['players'].append({
-                        'name': i.nick,
-                        'score': 0,
-                        'imposter_wins': 0,
-                        "crewmate_wins": 0,
-                        "games": 1
-                    })
+            if played_game == False:
+                data['players'].append({
+                    'name': i.nick,
+                    'score': 0,
+                    'imposter_wins': 0,
+                    "crewmate_wins": 0,
+                    "games": 1
+                })
 
         played_game = False
 
     json_file.close()
-    with open('/home/jeh/leaderboards.json', "w") as outfile:
+    with open(script_placement+'leaderboards.json', "w") as outfile:
         json.dump(data, outfile, indent=4)
     outfile.close()
 
@@ -270,8 +280,9 @@ async def admin_win(ctx, imposter1, imposter2):
         user_nick = user.nick
     current_time = datetime.datetime.now()
 
-    print("USER " + user_name + " AKA " + user_nick + ' used COMMAND: "admin_win" at time: ' + str(current_time))
-
+    f = open(script_placement+"command_log.txt", "a+")
+    f.write("USER " + user_name + " AKA " + user_nick + ' used COMMAND: "admin_win" at time: ' + str(current_time) + "\n")
+    f.close()
 
 @bot.command(name='rank', help='Checks the rank and points for player "[Name]"')
 async def rank(ctx, player):
@@ -282,7 +293,7 @@ async def rank(ctx, player):
     counter = 0
     is_player = False
 
-    with open('leaderboards.json') as json_file:
+    with open(script_placement+'leaderboards.json') as json_file:
         data = json.load(json_file)
     sorted_obj = dict(data)
     sorted_obj['players'] = sorted(data['players'], key=lambda x : x['score'], reverse=True)
@@ -332,7 +343,10 @@ async def rank(ctx, player):
         user_nick = user.nick
     current_time = datetime.datetime.now()
 
-    print("USER " + user_name + " AKA " + user_nick + ' used COMMAND: "rank" at time: ' + str(current_time))
+    f = open(script_placement+"command_log.txt", "a+")
+    f.write("USER " + user_name + " AKA " + user_nick + ' used COMMAND: "rank" at time: ' + str(current_time) + "\n")
+    f.close()
+
 
 @bot.command(name='admin_lose', help='Award points to crewmates NOT imposter1 "[Name]" and imposter2 "[Name]"')
 @commands.has_any_role('Skaberen', 'Tech guy', 'Admin')
@@ -362,10 +376,10 @@ async def admin_lose(ctx, imposter1, imposter2):
             if i.nick != imposter1 and i.nick != imposter2:
                 point_award.append(str(i.nick))
 
-    with open('leaderboards.json') as json_file:
+    with open(script_placement+'leaderboards.json') as json_file:
         data = json.load(json_file)
 
-    with open('/home/jeh/leaderboards_snapshot.json', "w") as outfile:
+    with open(script_placement+'leaderboards_snapshot.json', "w") as outfile:
         json.dump(data, outfile, indent=4)
     outfile.close()
 
@@ -396,14 +410,14 @@ async def admin_lose(ctx, imposter1, imposter2):
                     j['games'] = temp_games
                     played_game = True
 
-                if played_game == False:
-                    data['players'].append({
-                        'name': i.name,
-                        'score': 0,
-                        'imposter_wins': 0,
-                        "crewmate_wins": 0,
-                        "games": 1
-                    })
+            if played_game == False:
+                data['players'].append({
+                    'name': i.name,
+                    'score': 0,
+                    'imposter_wins': 0,
+                    "crewmate_wins": 0,
+                    "games": 1
+                })
         else:
             for j in data['players']:
                 if i.nick == j['name']:
@@ -411,18 +425,18 @@ async def admin_lose(ctx, imposter1, imposter2):
                     j['games'] = temp_games
                     played_game = True
 
-                if played_game == False:
-                    data['players'].append({
-                        'name': i.nick,
-                        'score': 0,
-                        'imposter_wins': 0,
-                        "crewmate_wins": 0,
-                        "games": 1
-                    })
+            if played_game == False:
+                data['players'].append({
+                    'name': i.nick,
+                    'score': 0,
+                    'imposter_wins': 0,
+                    "crewmate_wins": 0,
+                    "games": 1
+                })
         played_game = False
 
     json_file.close()
-    with open('/home/jeh/leaderboards.json', "w") as outfile:
+    with open(script_placement+'leaderboards.json', "w") as outfile:
         json.dump(data, outfile, indent=4)
     outfile.close()
 
@@ -440,7 +454,9 @@ async def admin_lose(ctx, imposter1, imposter2):
         user_nick = user.nick
     current_time = datetime.datetime.now()
 
-    print("USER " + user_name + " AKA " + user_nick + ' used COMMAND: "admin_lose" at time: ' + str(current_time))
+    f = open(script_placement+"command_log.txt", "a+")
+    f.write("USER " + user_name + " AKA " + user_nick + ' used COMMAND: "admin_lose" at time: ' + str(current_time) + "\n")
+    f.close()
 
 
 @bot.command(name='roll_dice', help='Simulates rolling [number] dice with [number] sides')
@@ -459,7 +475,10 @@ async def roll(ctx, number_of_dice: int, number_of_sides: int):
         user_nick = user.nick
     current_time = datetime.datetime.now()
 
-    print("USER " + user_name + " AKA " + user_nick + ' used COMMAND: "roll_dice" at time: ' + str(current_time))
+    f = open(script_placement+"command_log.txt", "a+")
+    f.write("USER " + user_name + " AKA " + user_nick + ' used COMMAND: "roll_dice" at time: ' + str(current_time) + "\n")
+    f.close()
+
 
 @bot.command(name='lose', help='Award points to crewmates NOT imposter1 "[Name]" and imposter2 "[Name]"')
 async def lose(ctx, imposter1, imposter2):
@@ -489,10 +508,10 @@ async def lose(ctx, imposter1, imposter2):
             if i.nick != imposter1 and i.nick != imposter2:
                 point_award.append(str(i.nick))
 
-    with open('leaderboards.json') as json_file:
+    with open(script_placement+'leaderboards.json') as json_file:
         data = json.load(json_file)
 
-    with open('/home/jeh/leaderboards_snapshot.json', "w") as outfile:
+    with open(script_placement+'leaderboards_snapshot.json', "w") as outfile:
         json.dump(data, outfile, indent=4)
     outfile.close()
 
@@ -523,14 +542,14 @@ async def lose(ctx, imposter1, imposter2):
                     j['games'] = temp_games
                     played_game = True
 
-                if played_game == False:
-                    data['players'].append({
-                        'name': i.name,
-                        'score': 0,
-                        'imposter_wins': 0,
-                        "crewmate_wins": 0,
-                        "games": 1
-                    })
+            if played_game == False:
+                data['players'].append({
+                    'name': i.name,
+                    'score': 0,
+                    'imposter_wins': 0,
+                    "crewmate_wins": 0,
+                    "games": 1
+                })
         else:
             for j in data['players']:
                 if i.nick == j['name']:
@@ -538,14 +557,14 @@ async def lose(ctx, imposter1, imposter2):
                     j['games'] = temp_games
                     played_game = True
 
-                if played_game == False:
-                    data['players'].append({
-                        'name': i.nick,
-                        'score': 0,
-                        'imposter_wins': 0,
-                        "crewmate_wins": 0,
-                        "games": 1
-                    })
+            if played_game == False:
+                data['players'].append({
+                    'name': i.nick,
+                    'score': 0,
+                    'imposter_wins': 0,
+                    "crewmate_wins": 0,
+                    "games": 1
+                })
 
         played_game = False
 
@@ -571,7 +590,7 @@ async def lose(ctx, imposter1, imposter2):
         return
     else:
         # we got a reaction
-        with open('/home/jeh/leaderboards.json', "w") as outfile:
+        with open(script_placement+'leaderboards.json', "w") as outfile:
             json.dump(data, outfile, indent=4)
         outfile.close()
         await leaderboards_channel.send("Points were scored")
@@ -584,7 +603,10 @@ async def lose(ctx, imposter1, imposter2):
         user_nick = user.nick
     current_time = datetime.datetime.now()
 
-    print("USER " + user_name + " AKA " + user_nick + ' used COMMAND: "lose" at time: ' + str(current_time))
+    f = open(script_placement+"command_log.txt", "a+")
+    f.write("USER " + user_name + " AKA " + user_nick + ' used COMMAND: "lose" at time: ' + str(current_time) + "\n")
+    f.close()
+
 
 @bot.command(name='win', help='Award points to imposter1 "[Name]" and imposter2 "[Name]"')
 async def win(ctx, imposter1, imposter2):
@@ -613,10 +635,10 @@ async def win(ctx, imposter1, imposter2):
                 point_award.append(str(i.nick))
 
 
-    with open('leaderboards.json') as json_file:
+    with open(script_placement+'leaderboards.json') as json_file:
         data = json.load(json_file)
 
-    with open('/home/jeh/leaderboards_snapshot.json', "w") as outfile:
+    with open(script_placement+'leaderboards_snapshot.json', "w") as outfile:
         json.dump(data, outfile, indent=4)
     outfile.close()
 
@@ -647,14 +669,14 @@ async def win(ctx, imposter1, imposter2):
                     j['games'] = temp_games
                     played_game = True
 
-                if played_game == False:
-                    data['players'].append({
-                        'name': i.name,
-                        'score': 0,
-                        'imposter_wins': 0,
-                        "crewmate_wins": 0,
-                        "games": 1
-                    })
+            if played_game == False:
+                data['players'].append({
+                    'name': i.name,
+                    'score': 0,
+                    'imposter_wins': 0,
+                    "crewmate_wins": 0,
+                    "games": 1
+                })
         else:
             for j in data['players']:
                 if i.nick == j['name']:
@@ -662,14 +684,14 @@ async def win(ctx, imposter1, imposter2):
                     j['games'] = temp_games
                     played_game = True
 
-                if played_game == False:
-                    data['players'].append({
-                        'name': i.nick,
-                        'score': 0,
-                        'imposter_wins': 0,
-                        "crewmate_wins": 0,
-                        "games": 1
-                    })
+            if played_game == False:
+                data['players'].append({
+                    'name': i.nick,
+                    'score': 0,
+                    'imposter_wins': 0,
+                    "crewmate_wins": 0,
+                    "games": 1
+                })
 
         played_game = False
 
@@ -695,7 +717,7 @@ async def win(ctx, imposter1, imposter2):
         return
     else:
         # we got a reaction
-        with open('/home/jeh/leaderboards.json', "w") as outfile:
+        with open(script_placement+'leaderboards.json', "w") as outfile:
             json.dump(data, outfile, indent=4)
         outfile.close()
         await leaderboards_channel.send("Points were scored")
@@ -708,7 +730,9 @@ async def win(ctx, imposter1, imposter2):
         user_nick = user.nick
     current_time = datetime.datetime.now()
 
-    print("USER " + user_name + " AKA " + user_nick + ' used COMMAND: "win" at time: ' + str(current_time))
+    f = open(script_placement+"command_log.txt", "a+")
+    f.write("USER " + user_name + " AKA " + user_nick + ' used COMMAND: "win" at time: ' + str(current_time) + "\n")
+    f.close()
 
 
 @bot.event
