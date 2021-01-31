@@ -4,10 +4,10 @@ mount / -o remount,rw
 sed -i 's| init=.*||' /boot/cmdline.txt
 
 ## Do stuff
-raspi-config nonint do_hostname MagnusPi
-raspi-config nonint do_vnc 0
-raspi-config nonint do_ssh 0
-raspi-config nonint do_wifi_country DK
+sudo raspi-config nonint do_hostname MagnusPi
+sudo raspi-config nonint do_vnc 0
+sudo raspi-config nonint do_ssh 0 
+sudo raspi-config nonint do_wifi_country DK
 
 sync
 umount /boot
@@ -16,4 +16,6 @@ sync
 echo 1 > /proc/sys/kernel/sysrq
 echo b > /proc/sysrq-trigger
 sleep 5
+
+reboot
 
